@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CleanWard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#e8ece7; --surface:#f6f8f4; --ink:#14201a; --muted:#53615a; --line:#c9d0c8;
+  --hivis:#f4b400; --on-hivis:#1b1500;
+  --panel:#14201a; --panel-ink:#eef3ee; --panel-muted:#9db0a5;
+  --green:#1b7f46; --blue:#1c5cb8; --red:#c43229;
+  --green-t:#d9eddf; --blue-t:#dbe6f7; --red-t:#f7dcda;
+  --green-ink:#115a31; --blue-ink:#144690; --red-ink:#962219;
+  --focus:#0b57d0;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1411; --surface:#161f1a; --ink:#e7eee9; --muted:#9aa9a1; --line:#2a3731;
+    --panel:#0a0f0c; --panel-ink:#eef3ee; --panel-muted:#8ea196;
+    --green-t:#17301f; --blue-t:#16263f; --red-t:#3a1c1a;
+    --green-ink:#86e0aa; --blue-ink:#9ec1f5; --red-ink:#ff9d94;
+    --focus:#8ab4ff; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1411; --surface:#161f1a; --ink:#e7eee9; --muted:#9aa9a1; --line:#2a3731;
+  --panel:#0a0f0c; --panel-ink:#eef3ee; --panel-muted:#8ea196;
+  --green-t:#17301f; --blue-t:#16263f; --red-t:#3a1c1a;
+  --green-ink:#86e0aa; --blue-ink:#9ec1f5; --red-ink:#ff9d94;
+  --focus:#8ab4ff; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+h1,h2,h3{font-family:var(--display);line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,6vw,4rem);text-transform:uppercase;letter-spacing:.01em}
+h2{font-size:clamp(1.7rem,3.4vw,2.3rem);text-transform:uppercase}
+h3{font-size:1.3rem;text-transform:uppercase}
+p{margin:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--muted)}
+main,.top,footer{max-width:1120px;margin-inline:auto}
+
+.top{display:flex;align-items:center;gap:20px;padding:14px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-family:var(--display);font-weight:700;font-size:1.7rem;text-transform:uppercase;margin-right:auto}
+.brand svg{color:var(--hivis);background:var(--panel);border-radius:6px;padding:3px;width:32px;height:32px}
+.top nav{display:flex;gap:6px}
+.top nav a{color:var(--ink);text-decoration:none;font-weight:600;padding:8px 12px;border-radius:6px}
+.top nav a:hover{background:var(--line)}
+.icon-btn{font-size:1.2rem;width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:32px;padding:28px 0 24px;align-items:start}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.lede{margin:16px 0 22px;max-width:52ch;color:var(--muted);font-size:1.08rem}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+label{font-weight:600;font-size:.9rem}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:11px 12px;width:100%;min-width:0}
+select:hover,input:hover,textarea:hover{border-color:var(--muted)}
+.hero .field{max-width:380px}
+.ward-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 0;max-width:560px}
+.ward-facts div{border-top:2px solid var(--ink);padding-top:8px;min-width:0}
+.ward-facts dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.ward-facts dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
+
+.ticket{background:var(--panel);color:var(--panel-ink);border-radius:14px;padding:22px;position:relative;overflow:hidden}
+.ticket::after{content:"";position:absolute;inset:auto 0 0 0;height:8px;background:repeating-linear-gradient(135deg,var(--hivis) 0 14px,#111 14px 28px)}
+.ticket-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ticket-ward{font-family:var(--display);font-size:1.6rem;font-weight:700;text-transform:uppercase}
+.pill{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;border-radius:99px;background:var(--hivis);color:var(--on-hivis);white-space:nowrap}
+.pill.live{background:#3ecf7c;color:#04210f}
+.pill.done{background:#3a4a41;color:#cfdcd3}
+.cd-label{color:var(--panel-muted);margin-top:14px;font-size:.95rem}
+.cd{display:flex;align-items:flex-start;gap:6px;font-family:var(--mono);margin:4px 0 14px}
+.cd div{display:flex;flex-direction:column;align-items:center}
+.cd b{font-size:clamp(2.4rem,8vw,3.6rem);line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
+.cd small{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--panel-muted)}
+.cd>span{font-size:clamp(2rem,6vw,3rem);line-height:1.2;color:var(--hivis)}
+.window{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.82rem;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:8px;background:#2c3a32;border-radius:9px;overflow:hidden;min-width:40px}
+.bar i{display:block;height:100%;width:0;background:var(--hivis);transition:width .6s}
+.now-line{margin-top:12px;font-size:.88rem;color:var(--panel-muted);min-height:1.4em}
+.sim{margin-top:16px;padding-top:14px;padding-bottom:10px;border-top:1px dashed #3a4a41;display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.sim label{font-size:.8rem;color:var(--panel-muted);font-weight:500}
+.sim input{width:auto;padding:6px 8px;background:#1d2a23;color:var(--panel-ink);border-color:#3a4a41;color-scheme:dark}
+.link-btn{background:none;border:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;font-size:.85rem;padding:4px}
+.ticket .link-btn{color:var(--hivis)}
+
+.today{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:56px}
+.today-bins{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;font-weight:600;font-size:.85rem;white-space:nowrap}
+.tag::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.tag.g{background:var(--green-t);color:var(--green-ink)}
+.tag.b{background:var(--blue-t);color:var(--blue-ink)}
+.tag.r{background:var(--red-t);color:var(--red-ink)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(40px,1fr));gap:6px;flex:1 1 320px;max-width:460px}
+.day{text-align:center;border:1.5px solid var(--line);border-radius:8px;padding:6px 2px;font-size:.78rem;font-weight:600}
+.day.now{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.dots{display:flex;justify-content:center;gap:3px;margin-top:5px;min-height:9px}
+.dots i{width:8px;height:8px;border-radius:50%}
+.dots .g{background:var(--green)}.dots .b{background:var(--blue)}.dots .r{background:var(--red)}
+
+.block{margin-bottom:64px;scroll-margin-top:16px}
+.block-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px;margin-bottom:18px}
+.block-head p{color:var(--muted)}
+.tools{max-width:360px;margin-bottom:12px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);font-size:.95rem}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--bg)}
+tbody tr.sel{background:var(--hivis);color:var(--on-hivis)}
+tbody tr.sel td{border-color:rgba(0,0,0,.15)}
+tr:last-child td{border-bottom:0}
+td.t{font-family:var(--mono);font-size:.88rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.w{font-family:var(--display);font-size:1.25rem;font-weight:700}
+td .st{font-size:.8rem;font-weight:700}
+
+.bins{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.bin{--c:var(--green);text-align:left;border:2px solid transparent;border-radius:14px;padding:16px;background:var(--c);color:#fff;cursor:pointer;font:inherit;display:grid;grid-template-columns:56px minmax(0,1fr);gap:4px 14px;align-items:center}
+.bin.b{--c:var(--blue)}.bin.r{--c:var(--red)}
+.bin svg{grid-row:span 2;width:56px;height:64px}
+.bin strong{font-family:var(--display);font-size:1.45rem;text-transform:uppercase;line-height:1}
+.bin span{font-size:.88rem;opacity:.95}
+.bin[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:3px}
+.search-row{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;margin-bottom:10px}
+.search-box{flex:1 1 320px;max-width:520px}
+.search-box input{font-size:1.05rem;padding:13px 14px}
+.count{color:var(--muted);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:.85rem;cursor:pointer}
+.chip:hover{border-color:var(--ink)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.item .top2{display:flex;align-items:center;gap:10px}
+.item .ico{font-size:2rem;line-height:1}
+.item h3{font-size:1.15rem;text-transform:none;font-family:var(--body);font-weight:600;line-height:1.2}
+.item p{font-size:.88rem;color:var(--muted)}
+.empty{grid-column:1/-1;padding:28px;border:2px dashed var(--line);border-radius:12px;text-align:center;color:var(--muted)}
+
+.report-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
+form{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+textarea{resize:vertical}
+.err{color:var(--red-ink);font-size:.82rem;min-height:0;font-weight:500}
+.field.bad input{border-color:var(--red)}
+.btn{background:var(--hivis);color:var(--on-hivis);border:0;border-radius:10px;padding:14px 18px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;align-self:flex-start}
+.btn:hover{filter:brightness(.95)}
+.confirm{background:var(--green-t);color:var(--green-ink);border-radius:12px;padding:16px;margin-bottom:20px}
+.confirm b{font-family:var(--mono);font-size:1.05rem;overflow-wrap:anywhere}
+.confirm p+p{margin-top:6px}
+.log-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.log li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:2px}
+.log .ref{font-family:var(--mono);font-size:.8rem;font-weight:700;overflow-wrap:anywhere}
+.log .empty-log{color:var(--muted);border-style:dashed}
+
+footer{border-top:1px solid var(--line);padding-top:20px;display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+
+@media (max-width:860px){
+  .hero,.report-grid{grid-template-columns:minmax(0,1fr)}
+  .bins{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){
+  .row2{grid-template-columns:minmax(0,1fr)}
+  .ward-facts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .top nav a{padding:8px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#top" aria-label="CleanWard home">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3L5 8Z" fill="currentColor"/><rect x="3.5" y="5" width="17" height="2.6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="6" height="2" rx="1" fill="currentColor"/></svg>
+    <span>CleanWard</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#schedule">Schedule</a>
+    <a href="#guide">Bin guide</a>
+    <a href="#report">Report</a>
+  </nav>
+  <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch colour theme">◐</button>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Municipal Garbage Collection · Sample ward data</p>
+      <h1>Know when the truck comes. Know which bin it goes in.</h1>
+      <p class="lede">Pick your ward to see the morning pickup window, a live countdown, and the bins to put out today.</p>
+      <div class="field">
+        <label for="ward">Your ward</label>
+        <select id="ward"></select>
+      </div>
+      <dl class="ward-facts" id="wardFacts"></dl>
+    </div>
+
+    <div class="ticket" aria-live="polite">
+      <div class="ticket-head">
+        <span id="ticketWard" class="ticket-ward">Ward 14</span>
+        <span id="statusPill" class="pill">Upcoming</span>
+      </div>
+      <p id="cdLabel" class="cd-label">Truck arrives in</p>
+      <div class="cd" role="timer" aria-label="Time until garbage truck">
+        <div><b id="cdH">00</b><small>hr</small></div><span>:</span>
+        <div><b id="cdM">00</b><small>min</small></div><span>:</span>
+        <div><b id="cdS">00</b><small>sec</small></div>
+      </div>
+      <div class="window"><span id="winStart">7:30 AM</span><div class="bar"><i id="barFill"></i></div><span id="winEnd">8:15 AM</span></div>
+      <p id="nowLine" class="now-line"></p>
+      <div class="sim">
+        <label for="simTime">Preview a time of day</label>
+        <input id="simTime" type="time">
+        <button id="simReset" class="link-btn" type="button">Use real time</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="today" aria-labelledby="todayH">
+    <div>
+      <h2 id="todayH">Put out today</h2>
+      <p id="todayBins" class="today-bins"></p>
+    </div>
+    <div class="week" id="week" role="list" aria-label="Weekly bin calendar"></div>
+  </section>
+
+  <section id="schedule" class="block">
+    <div class="block-head">
+      <h2>All wards, morning pickup windows</h2>
+      <p>Select a row to switch ward. Windows repeat daily.</p>
+    </div>
+    <div class="tools"><label class="sr" for="wardFilter">Filter wards</label><input id="wardFilter" type="search" placeholder="Filter by ward number or area"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ward</th><th>Area</th><th>Pickup window</th><th>Supervisor</th><th>Status now</th></tr></thead>
+        <tbody id="wardRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="guide" class="block">
+    <div class="block-head">
+      <h2>Waste segregation guide</h2>
+      <p>Search an item or tap a bin to see what belongs in it.</p>
+    </div>
+    <div class="bins" id="binTiles"></div>
+    <div class="search-row">
+      <div class="search-box">
+        <label class="sr" for="itemSearch">Search waste item</label>
+        <input id="itemSearch" type="search" placeholder="Try: banana peel, battery, diaper, pizza box" autocomplete="off">
+      </div>
+      <p id="resultCount" class="count" aria-live="polite"></p>
+    </div>
+    <div class="chips" id="quickChips"></div>
+    <div class="items" id="items"></div>
+  </section>
+
+  <section id="report" class="block report">
+    <div class="block-head">
+      <h2>Report a missed pickup</h2>
+      <p>Your report goes to the sanitation supervisor of your ward.</p>
+    </div>
+    <div class="report-grid">
+      <form id="reportForm" novalidate>
+        <div class="row2">
+          <div class="field"><label for="rName">Your name</label><input id="rName" type="text" autocomplete="name" required><p class="err" id="eName"></p></div>
+          <div class="field"><label for="rPhone">Mobile number</label><input id="rPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digits" autocomplete="tel" required><p class="err" id="ePhone"></p></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="rWard">Ward</label><select id="rWard"></select></div>
+          <div class="field"><label for="rDate">Date pickup was missed</label><input id="rDate" type="date" required><p class="err" id="eDate"></p></div>
+        </div>
+        <div class="field"><label for="rAddr">House number and landmark</label><input id="rAddr" type="text" placeholder="e.g. H.No. 221, near community park" required><p class="err" id="eAddr"></p></div>
+        <div class="field"><label for="rType">What happened</label>
+          <select id="rType">
+            <option>Truck did not come at all</option>
+            <option>Truck came after the pickup window</option>
+            <option>Only some bins were emptied</option>
+            <option>Bin emptied but waste spilled on the road</option>
+            <option>Collector refused mixed waste</option>
+          </select>
+        </div>
+        <div class="field"><label for="rNote">Details (optional)</label><textarea id="rNote" rows="3" maxlength="300" placeholder="Anything the supervisor should know"></textarea></div>
+        <button class="btn" type="submit">Send report to supervisor</button>
+      </form>
+
+      <aside class="report-side">
+        <div id="confirm" class="confirm" hidden></div>
+        <div class="log-head"><h3>Your recent reports</h3><button id="clearLog" class="link-btn" type="button">Clear</button></div>
+        <ul id="log" class="log"></ul>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><b>Team Byte Force</b> · Lovely Professional University</p>
+  <p class="muted">Mokshya Giri 12607097 · Sidharth Verma 12609885 · Gaurav Kumar 12608292</p>
+  <p class="muted">Ward names, windows and supervisors are sample data for this project demo. Reports are saved only in this browser.</p>
+</footer>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+
+
+var AREAS=['Phagwara Central','Law Gate','Chaheru','Hargobind Nagar','Model Town','Green Avenue','Sant Nagar','Gobind Pura','Khalsa Colony','Sutheri Road','Gandhi Chowk','Rail Colony','Mehli Gate','Green Park','Defence Colony','Ranipur','Kishanpura','Lalpur'];
+var SUPS=['R. Kaur','M. Singh','A. Sharma','P. Gill','S. Verma','H. Bedi'];
+var WARDS=AREAS.map(function(a,i){var n=i+1,s=360+((n*5)%8)*15;return {n:n,area:a,start:s,end:s+45,sup:SUPS[i%SUPS.length]}});
+var BINS={
+  g:{name:'Green Bin',kind:'Wet organic food scraps',days:[0,1,2,3,4,5,6]},
+  b:{name:'Blue Bin',kind:'Dry recyclables',days:[2,5]},
+  r:{name:'Red Bin',kind:'Hazardous and sanitary waste',days:[6]}
+};
+var DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var ITEMS=[
+['🍌','Banana peel','g','Drop in loose. Peels and skins compost well.','fruit skin peel'],
+['🥬','Vegetable scraps','g','Cuttings, stalks and leaves go in without a plastic bag.','veg cabbage spinach'],
+['🍚','Cooked rice and dal','g','Leftover cooked food. Drain extra liquid first.','leftover food roti'],
+['🫖','Tea leaves and coffee grounds','g','Squeeze out water. Remove the tea bag if it is plastic mesh.','chai'],
+['🥚','Eggshells','g','Crush lightly. Egg waste is wet organic.','egg'],
+['🍖','Meat and fish bones','g','Wrap loosely in newspaper to limit smell.','chicken non veg'],
+['🌸','Flowers and puja offerings','g','Remove plastic wrapping and threads first.','garland temple'],
+['🍂','Garden leaves','g','Dry leaves and small trimmings.','plant grass'],
+['🥭','Fruit waste','g','Seeds, rinds and spoiled fruit.','mango apple orange'],
+['🥛','Milk packet (rinsed)','b','Rinse, dry and flatten. Plastic films are dry waste.','plastic pouch'],
+['🧴','Plastic bottle','b','Empty, rinse and crush. Keep the cap on.','pet water bottle'],
+['📦','Cardboard box','b','Flatten it. Keep it dry.','carton cardboard parcel'],
+['🍕','Pizza box (clean part)','b','Tear off the greasy base into Green. Recycle the clean lid.','greasy'],
+['📰','Newspaper and magazines','b','Bundle together and keep dry.','paper'],
+['🥫','Metal tin or can','b','Rinse and press the sharp lid inside.','steel aluminium'],
+['🍾','Glass bottle or jar','b','Rinse. Wrap broken glass in paper and mark it.','glass broken'],
+['🛍️','Plastic carry bag','b','Clean and dry bags only. Soiled bags go to Red.','polythene'],
+['📓','Notebooks and office paper','b','Remove plastic spiral covers if possible.','paper'],
+['🥤','Tetra pack','b','Rinse, flatten and dry.','juice carton'],
+['🧃','Chips and biscuit wrappers','b','Dry multilayer wrappers go with Blue.','packet snack'],
+['👕','Old clothes','b','Donate if usable. Otherwise bag them dry.','cloth textile'],
+['👟','Footwear','b','Tie pairs together. Dry waste.','shoes slipper'],
+['🧸','Broken plastic toys','b','Remove batteries first.','toy'],
+['🔋','Used batteries','r','Never mix with other waste. Tape the ends if loose.','cell AA AAA'],
+['💊','Expired medicines','r','Keep in original strips. Do not flush.','tablet capsule syrup'],
+['🩹','Sanitary pads','r','Wrap in newspaper and mark it red. Never in Green.','menstrual napkin'],
+['🍼','Diapers','r','Wrap and seal. Dispose daily.','baby nappy'],
+['💉','Syringes and needles','r','Cap the needle. Use a hard container.','injection sharps'],
+['😷','Used masks and gloves','r','Cut the ear loops, then bag and seal.','covid face mask'],
+['💡','Bulbs and tube lights','r','CFL and tube lights contain mercury. Wrap before disposing.','cfl led tubelight'],
+['🌡️','Broken thermometer','r','Mercury is toxic. Do not touch it with bare hands.','mercury'],
+['🎨','Paint tins and thinner','r','Keep the lid sealed. Do not pour down drains.','chemical solvent'],
+['🪒','Razor blades','r','Wrap in paper or tape before disposal.','shaving blade'],
+['🧼','Pesticide and cleaner bottles','r','Hand over sealed. Do not rinse into drains.','insecticide phenyl acid'],
+['🩺','Dressings and bandages','r','Used cotton, plaster and dressings.','cotton plaster first aid'],
+['🐕','Pet waste','r','Bag and seal before putting it in Red.','dog cat']
+];
+
+
+var offset=0;
+function now(){return new Date(Date.now()+offset)}
+function fmt(min){var h=Math.floor(min/60),m=min%60,ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+(m<10?'0':'')+m+' '+ap}
+function pad(n){return n<10?'0'+n:''+n}
+function atMin(d,min,addDays){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()+(addDays||0),0,min,0);return x}
+function state(w,d){
+  var s=atMin(d,w.start),e=atMin(d,w.end);
+  if(d<s)return {k:'up',label:'Upcoming',target:s};
+  if(d<=e)return {k:'live',label:'In your ward now',target:e,s:s,e:e};
+  return {k:'done',label:'Done for today',target:atMin(d,w.start,1)};
+}
+
+
+var cur=parseInt(store('cw_ward'),10)||14;
+function findW(n){return WARDS.filter(function(w){return w.n===n})[0]||WARDS[13]}
+function fillWardSelect(sel){sel.innerHTML=WARDS.map(function(w){return '<option value="'+w.n+'">Ward '+w.n+' · '+esc(w.area)+'</option>'}).join('')}
+fillWardSelect($('ward'));fillWardSelect($('rWard'));
+function setWard(n){
+  cur=n;store('cw_ward',String(n));
+  $('ward').value=n;$('rWard').value=n;
+  var w=findW(n);
+  $('ticketWard').textContent='Ward '+w.n;
+  $('winStart').textContent=fmt(w.start);$('winEnd').textContent=fmt(w.end);
+  $('wardFacts').innerHTML='<div><dt>Area</dt><dd>'+esc(w.area)+'</dd></div><div><dt>Pickup window</dt><dd>'+fmt(w.start)+' – '+fmt(w.end)+'</dd></div><div><dt>Supervisor</dt><dd>'+esc(w.sup)+'</dd></div>';
+  renderRows();tick(true);
+}
+$('ward').addEventListener('change',function(){setWard(+this.value)});
+
+
+var lastMin=-1;
+function tick(force){
+  var d=now(),w=findW(cur),st=state(w,d);
+  var diff=Math.max(0,Math.round((st.target-d)/1000));
+  $('cdH').textContent=pad(Math.floor(diff/3600));
+  $('cdM').textContent=pad(Math.floor(diff%3600/60));
+  $('cdS').textContent=pad(diff%60);
+  var pill=$('statusPill');pill.textContent=st.label;pill.className='pill'+(st.k==='live'?' live':st.k==='done'?' done':'');
+  var lab=$('cdLabel'),line=$('nowLine'),fill=$('barFill');
+  if(st.k==='up'){lab.textContent='Truck arrives in';fill.style.width='0%';line.textContent='Keep your bins at the gate before '+fmt(w.start)+'.'}
+  else if(st.k==='live'){lab.textContent='Pickup window closes in';fill.style.width=Math.min(100,((d-st.s)/(st.e-st.s))*100)+'%';line.textContent='The truck is on its round in your ward. Hand over waste now.'}
+  else{lab.textContent='Next pickup (tomorrow) in';fill.style.width='100%';line.textContent='Today\u2019s window ended at '+fmt(w.end)+'. Missed it? Use the report form below.'}
+  var m=d.getMinutes()+d.getHours()*60;
+  if(force||m!==lastMin){lastMin=m;renderRows();renderToday(d)}
+}
+setInterval(tick,1000);
+
+
+$('simTime').addEventListener('input',function(){
+  if(!this.value){offset=0;tick(true);return}
+  var p=this.value.split(':'),t=new Date();t.setHours(+p[0],+p[1],0,0);offset=t-Date.now();tick(true);
+});
+$('simReset').addEventListener('click',function(){$('simTime').value='';offset=0;tick(true)});
+
+
+function renderToday(d){
+  var dow=d.getDay(),out=[];
+  Object.keys(BINS).forEach(function(k){if(BINS[k].days.indexOf(dow)>-1)out.push('<span class="tag '+k+'">'+BINS[k].name+'</span>')});
+  $('todayBins').innerHTML=out.join('');
+  var wk=[1,2,3,4,5,6,0].map(function(i){
+    var dots=Object.keys(BINS).map(function(k){return BINS[k].days.indexOf(i)>-1?'<i class="'+k+'"></i>':''}).join('');
+    return '<div class="day'+(i===dow?' now':'')+'" role="listitem" aria-label="'+DAYS[i]+'"><span>'+DAYS[i]+'</span><div class="dots">'+dots+'</div></div>';
+  });
+  $('week').innerHTML=wk.join('');
+}
+
+
+function renderRows(){
+  var q=($('wardFilter').value||'').toLowerCase().trim(),d=now();
+  var rows=WARDS.filter(function(w){return !q||('ward '+w.n+' '+w.area).toLowerCase().indexOf(q)>-1}).map(function(w){
+    var st=state(w,d);
+    return '<tr data-n="'+w.n+'" tabindex="0" class="'+(w.n===cur?'sel':'')+'"><td class="w">Ward '+w.n+'</td><td>'+esc(w.area)+'</td><td class="t">'+fmt(w.start)+' – '+fmt(w.end)+'</td><td>'+esc(w.sup)+'</td><td><span class="st">'+st.label+'</span></td></tr>';
+  });
+  $('wardRows').innerHTML=rows.length?rows.join(''):'<tr><td colspan="5">No ward matches your filter.</td></tr>';
+}
+$('wardFilter').addEventListener('input',renderRows);
+$('wardRows').addEventListener('click',function(e){var tr=e.target.closest('tr[data-n]');if(tr)setWard(+tr.dataset.n)});
+$('wardRows').addEventListener('keydown',function(e){if(e.key==='Enter'){var tr=e.target.closest('tr[data-n]');if(tr)setWard(+tr.dataset.n)}});
+
+
+var binFilter=null;
+var DESC={g:'Food scraps, peels, flowers, tea leaves',b:'Paper, plastic, metal, glass, cloth',r:'Sanitary, medical, batteries, bulbs, chemicals'};
+function binSVG(){return '<svg viewBox="0 0 56 64" aria-hidden="true"><rect x="6" y="10" width="44" height="7" rx="2" fill="#fff"/><rect x="20" y="3" width="16" height="6" rx="2" fill="#fff"/><path d="M10 20h36l-3 40a3 3 0 0 1-3 3H16a3 3 0 0 1-3-3l-3-40Z" fill="#fff" fill-opacity=".92"/><path d="M22 27v28M28 27v28M34 27v28" stroke="currentColor" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/></svg>'}
+function renderBins(){
+  $('binTiles').innerHTML=Object.keys(BINS).map(function(k){
+    var n=ITEMS.filter(function(i){return i[2]===k}).length;
+    return '<button type="button" class="bin '+k+'" data-bin="'+k+'" aria-pressed="'+(binFilter===k)+'" style="color:inherit">'+binSVG()+'<strong>'+BINS[k].name+' · '+BINS[k].kind+'</strong><span>'+DESC[k]+' · '+n+' items</span></button>';
+  }).join('');
+}
+function renderItems(){
+  var q=$('itemSearch').value.toLowerCase().trim();
+  var list=ITEMS.filter(function(i){
+    if(binFilter&&i[2]!==binFilter)return false;
+    return !q||(i[1]+' '+i[4]).toLowerCase().indexOf(q)>-1;
+  });
+  $('resultCount').textContent='Showing '+list.length+' of '+ITEMS.length+' items';
+  $('items').innerHTML=list.length?list.map(function(i){
+    return '<article class="item"><div class="top2"><span class="ico" aria-hidden="true">'+i[0]+'</span><h3>'+esc(i[1])+'</h3></div><span class="tag '+i[2]+'">'+BINS[i[2]].name+'</span><p>'+esc(i[3])+'</p></article>';
+  }).join(''):'<div class="empty">No match for \u201c'+esc(q)+'\u201d. If you are unsure, keep it out of the Green and Blue bins and ask your ward supervisor.</div>';
+}
+$('binTiles').addEventListener('click',function(e){
+  var b=e.target.closest('.bin');if(!b)return;
+  binFilter=binFilter===b.dataset.bin?null:b.dataset.bin;renderBins();renderItems();
+});
+$('itemSearch').addEventListener('input',renderItems);
+$('quickChips').innerHTML=['banana peel','battery','diaper','pizza box','medicine','plastic bottle'].map(function(t){return '<button type="button" class="chip">'+t+'</button>'}).join('');
+$('quickChips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;$('itemSearch').value=c.textContent;renderItems()});
+
+
+var KEY='cw_reports';
+function loadLog(){try{return JSON.parse(store(KEY)||'[]')}catch(e){return []}}
+function renderLog(){
+  var l=loadLog().slice(0,5);
+  $('log').innerHTML=l.length?l.map(function(r){
+    return '<li><span class="ref">'+esc(r.ref)+'</span><span>Ward '+r.ward+' · '+esc(r.type)+'</span><span class="muted">Missed on '+esc(r.date)+' · Status: Received</span></li>';
+  }).join(''):'<li class="empty-log">No reports yet. Reports you send from this browser appear here.</li>';
+}
+$('clearLog').addEventListener('click',function(){store(KEY,'[]');renderLog();$('confirm').hidden=true});
+(function(){
+  var t=new Date(),iso=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
+  $('rDate').value=iso;$('rDate').max=iso;
+})();
+function setErr(id,fieldInput,msg){$(id).textContent=msg||'';var f=$(fieldInput).closest('.field');f.classList.toggle('bad',!!msg)}
+$('rPhone').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'')});
+$('reportForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var name=$('rName').value.trim(),phone=$('rPhone').value.trim(),addr=$('rAddr').value.trim(),date=$('rDate').value;
+  var ok=true;
+  setErr('eName','rName',name.length<2?'Enter your name.':'');ok=ok&&name.length>=2;
+  var pOk=/^[6-9]\d{9}$/.test(phone);setErr('ePhone','rPhone',pOk?'':'Enter a 10 digit mobile number starting with 6 to 9.');ok=ok&&pOk;
+  var dOk=!!date&&date<=$('rDate').max;setErr('eDate','rDate',dOk?'':'Choose today or an earlier date.');ok=ok&&dOk;
+  setErr('eAddr','rAddr',addr.length<5?'Add a house number and landmark.':'');ok=ok&&addr.length>=5;
+  if(!ok){var bad=document.querySelector('.field.bad input');if(bad)bad.focus();return}
+  var wn=+$('rWard').value,w=findW(wn);
+  var ref='CW-W'+wn+'-'+date.replace(/-/g,'')+'-'+Math.floor(1000+Math.random()*9000);
+  var rec={ref:ref,ward:wn,type:$('rType').value,date:date,name:name,phone:phone,addr:addr,note:$('rNote').value.trim()};
+  var log=loadLog();log.unshift(rec);store(KEY,JSON.stringify(log.slice(0,20)));
+  var c=$('confirm');
+  c.innerHTML='<p><b>'+esc(ref)+'</b></p><p>Report logged for Ward '+wn+' ('+esc(w.area)+'). Supervisor on duty: <strong>'+esc(w.sup)+'</strong>. Quote this number when you follow up.</p><p>Demo build: the report is saved in this browser and is not transmitted.</p>';
+  c.hidden=false;renderLog();
+  this.reset();$('rDate').value=$('rDate').max;$('rWard').value=wn;
+  c.scrollIntoView({block:'nearest',behavior:'smooth'});
+});
+
+
+$('themeBtn').addEventListener('click',function(){
+  var root=document.documentElement,dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme=dark?'light':'dark';store('cw_theme',root.dataset.theme);
+});
+var th=store('cw_theme');if(th)document.documentElement.dataset.theme=th;
+
+
+renderBins();renderItems();renderLog();setWard(cur);
+})();
+</script>
+</body>
+</html>
